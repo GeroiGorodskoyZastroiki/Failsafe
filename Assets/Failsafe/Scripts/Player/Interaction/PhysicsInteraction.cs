@@ -104,7 +104,7 @@ namespace Failsafe.Player.Interaction
         
         private void GrabObject()
         {
-            Physics.Raycast(transform.position, transform.forward, out RaycastHit hitInfo, _maxPickupDistance);
+            Physics.Raycast(_playerCameraTransform.position, _playerCameraTransform.forward, out RaycastHit hitInfo, _maxPickupDistance);
 
             if (!hitInfo.rigidbody)
                 return;
