@@ -17,9 +17,9 @@ namespace Failsafe.Player.ItemUsage
 
         private void Update()
         {
-            if (_physicsInteraction._carryingObject is null) return;
             if (!_playerController.InputHandler.UseTriggered) return;
-        
+            if (!_physicsInteraction._carryingObject) return;
+
             if (_physicsInteraction._carryingObject.TryGetComponent(out Item item))
             {
                 item.ActionsGroups.ForEach(group => group.Event.Invoke());
