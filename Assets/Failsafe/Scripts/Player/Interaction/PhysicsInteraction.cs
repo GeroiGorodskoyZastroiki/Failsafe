@@ -6,15 +6,15 @@ namespace Failsafe.Player.Interaction
 {
     public class PhysicsInteraction : MonoBehaviour
     {
-        [SerializeField] private float _carryingDistance = 2.5f;
-        [SerializeField] private float _maxPickupDistance = 5f;
+        [SerializeField] public float _carryingDistance = 2.5f;
+        [SerializeField] public float _maxPickupDistance = 5f;
         
-        [SerializeField] private GameObject _carryingObject;
-        [SerializeField] private Rigidbody _carryingBody;
-        [SerializeField] private Transform _playerCameraTransform;
+        [SerializeField] public GameObject _carryingObject;
+        [SerializeField] public Rigidbody _carryingBody;
+        [SerializeField] public Transform _playerCameraTransform;
         
-        [SerializeField] private Vector3 _draggablePositionOffset;
-        [SerializeField] private float _dragSpeed = 10f;
+        [SerializeField] public Vector3 _draggablePositionOffset;
+        [SerializeField] public float _dragSpeed = 10f;
         
         [Tooltip("Данная сила умножается на число от 1 до 3 при зажатии кнопки броска.")]
         [SerializeField] private float _throwForce = 3f;
