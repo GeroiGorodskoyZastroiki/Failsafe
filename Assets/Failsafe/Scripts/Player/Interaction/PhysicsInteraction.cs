@@ -56,6 +56,12 @@ namespace Failsafe.Player.Interaction
 
             if (IsDragging)
             {
+                if (!_carryingObject|| !_carryingBody)
+                {
+                    DropItem();
+                    return;
+                }
+
                 if (_playerController.InputHandler.AttackTriggered)
                 {
                     _throwForceMultiplier = Mathf.Clamp(_throwForceMultiplier + Time.deltaTime, _throwForceMultiplier, _maxForceMultiplier);
@@ -125,10 +131,13 @@ namespace Failsafe.Player.Interaction
 
         public void ThrowObject(float throwForceMultiplier)
         {
-            _carryingBody.useGravity = true;
-            
-            _carryingBody.AddForce(_playerCameraTransform.forward * (_throwForce * throwForceMultiplier), ForceMode.Impulse);
-            
+            if (_carryingBody)
+            {
+                _carryingBody.useGravity = true;
+                _carryingBody.AddForce(_playerCameraTransform.forward * (_throwForce * throwForceMultiplier),
+                    ForceMode.Impulse);
+            }
+
             _carryingBody = null;
             _carryingObject = null;
             IsDragging = false;
@@ -138,7 +147,7 @@ namespace Failsafe.Player.Interaction
         
         private void DropItem()
         {
-            _carryingBody.useGravity = true;
+            if (_carryingBody) _carryingBody.useGravity = true;
             _carryingBody = null;
             _carryingObject = null;
             IsDragging = false;
