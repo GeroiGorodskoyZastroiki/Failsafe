@@ -1,7 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-// Use physics raycast hit from mouse click to set agent destination
 [RequireComponent(typeof(NavMeshAgent))]
 public class ClickToMove : MonoBehaviour
 {
@@ -15,7 +14,7 @@ public class ClickToMove : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetMouseButtonDown(0) && !Input.GetKey(KeyCode.LeftShift))
+        if (Input.GetMouseButtonDown(0) && !Input.GetKey(KeyCode.LeftShift)) 
         {
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray.origin, ray.direction, out m_HitInfo))
