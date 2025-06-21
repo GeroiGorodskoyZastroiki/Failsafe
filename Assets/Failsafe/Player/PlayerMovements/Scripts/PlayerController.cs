@@ -23,7 +23,7 @@ namespace Failsafe.PlayerMovements
         private readonly PlayerMovementParameters _movementParametrs;
         private readonly PlayerNoiseParameters _noiseParametrs;
         private readonly SignalManager _signalManager;
-        private readonly InputHandler _inputHandler;
+        public readonly InputHandler InputHandler;
         private readonly PlayerView _playerView;
         private readonly IHealth _health;
         private readonly IStamina _stamina;
@@ -56,7 +56,7 @@ namespace Failsafe.PlayerMovements
             _movementParametrs = movementParametrs;
             _noiseParametrs = noiseParametrs;
             _signalManager = signalManager;
-            _inputHandler = inputHandler;
+            InputHandler = inputHandler;
             _playerView = playerView;
             _health = health;
             _stamina = stamina;
@@ -67,7 +67,7 @@ namespace Failsafe.PlayerMovements
         public void Initialize()
         {
             _movementController = new PlayerMovementController(_playerView.CharacterController);
-            _playerRotationController = new PlayerRotationController(_playerView.PlayerTransform, _playerView.PlayerRigHead, _inputHandler);
+            _playerRotationController = new PlayerRotationController(_playerView.PlayerTransform, _playerView.PlayerRigHead, InputHandler);
             _playerBodyController = new PlayerBodyController(_playerView.CharacterController);
             _ledgeController = new PlayerLedgeController(_playerView.PlayerTransform, _playerView.PlayerCamera, _playerView.PlayerGrabPoint, _movementParametrs);
             _playerGravity = new PlayerGravityController(_movementController, _playerView.CharacterController, _movementParametrs);
@@ -88,70 +88,70 @@ namespace Failsafe.PlayerMovements
             };
             _behaviorStateMachine = new BehaviorStateMachine(forcedStates);
 
-            var standingState = new StandingState(_inputHandler, _movementController);
-            var walkState = new WalkState(_inputHandler, _movementController, _movementParametrs, _noiseController, _stepController);
-            var runState = new SprintState(_inputHandler, _movementController, _movementParametrs, _noiseController, _stepController, _playerStaminaController);
-            var slideState = new SlideState(_inputHandler, _movementController, _movementParametrs, _playerBodyController, _playerRotationController);
-            var crouchState = new CrouchState(_inputHandler, _movementController, _movementParametrs, _playerBodyController, _noiseController, _stepController);
-            var jumpState = new JumpState(_inputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _playerStaminaController);
-            var fallState = new FallState(_inputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _noiseController, _playerMovementSpeedModifier);
-            var grabLedgeState = new GrabLedgeState(_inputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _playerGravity, _playerRotationController, _ledgeController);
-            var climbingUpState = new ClimbingUpState(_inputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _playerGravity, _ledgeController);
-            var climbingOnState = new ClimbingOnState(_inputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _playerGravity, _ledgeController);
-            var climbingOverState = new ClimbingOverState(_inputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _playerGravity, _ledgeController);
-            var ledgeJumpState = new LedgeJumpState(_inputHandler, _playerView.CharacterController, _movementParametrs, _playerView.PlayerCamera);
+            var standingState = new StandingState(InputHandler, _movementController);
+            var walkState = new WalkState(InputHandler, _movementController, _movementParametrs, _noiseController, _stepController);
+            var runState = new SprintState(InputHandler, _movementController, _movementParametrs, _noiseController, _stepController, _playerStaminaController);
+            var slideState = new SlideState(InputHandler, _movementController, _movementParametrs, _playerBodyController, _playerRotationController);
+            var crouchState = new CrouchState(InputHandler, _movementController, _movementParametrs, _playerBodyController, _noiseController, _stepController);
+            var jumpState = new JumpState(InputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _playerStaminaController);
+            var fallState = new FallState(InputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _noiseController, _playerMovementSpeedModifier);
+            var grabLedgeState = new GrabLedgeState(InputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _playerGravity, _playerRotationController, _ledgeController);
+            var climbingUpState = new ClimbingUpState(InputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _playerGravity, _ledgeController);
+            var climbingOnState = new ClimbingOnState(InputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _playerGravity, _ledgeController);
+            var climbingOverState = new ClimbingOverState(InputHandler, _playerView.CharacterController, _movementController, _movementParametrs, _playerGravity, _ledgeController);
+            var ledgeJumpState = new LedgeJumpState(InputHandler, _playerView.CharacterController, _movementParametrs, _playerView.PlayerCamera);
             var crouchIdleState = new CrouchIdle(_playerBodyController, _movementController, _movementParametrs, _noiseController, _stepController);
 
 
-            Func<bool> runStatePrecondition = () => _inputHandler.MoveForward && _inputHandler.SprintTriggered && !_stamina.IsEmpty;
-            Func<bool> jumpStatePrecondition = () => _inputHandler.JumpTriggered && !_stamina.IsEmpty && _playerGravity.IsGroundedFor(0.1f);
+            Func<bool> runStatePrecondition = () => InputHandler.MoveForward && InputHandler.SprintTriggered && !_stamina.IsEmpty;
+            Func<bool> jumpStatePrecondition = () => InputHandler.JumpTriggered && !_stamina.IsEmpty && _playerGravity.IsGroundedFor(0.1f);
 
-            standingState.AddTransition(walkState, () => !_inputHandler.MovementInput.Equals(Vector2.zero));
-            standingState.AddTransition(crouchIdleState, () => _inputHandler.CrouchTrigger.IsTriggered, _inputHandler.CrouchTrigger.ReleaseTrigger);
-            standingState.AddTransition(climbingOverState, () => _inputHandler.JumpTriggered && _ledgeController.CanClimbOverLedge());
-            standingState.AddTransition(climbingOnState, () => _inputHandler.JumpTriggered && _ledgeController.CanClimbOnLedge());
+            standingState.AddTransition(walkState, () => !InputHandler.MovementInput.Equals(Vector2.zero));
+            standingState.AddTransition(crouchIdleState, () => InputHandler.CrouchTrigger.IsTriggered, InputHandler.CrouchTrigger.ReleaseTrigger);
+            standingState.AddTransition(climbingOverState, () => InputHandler.JumpTriggered && _ledgeController.CanClimbOverLedge());
+            standingState.AddTransition(climbingOnState, () => InputHandler.JumpTriggered && _ledgeController.CanClimbOnLedge());
             standingState.AddTransition(jumpState, () => jumpStatePrecondition());
 
             walkState.AddTransition(runState, () => runStatePrecondition());
-            walkState.AddTransition(climbingOverState, () => _inputHandler.JumpTriggered && _ledgeController.CanClimbOverLedge());
-            walkState.AddTransition(climbingOnState, () => _inputHandler.JumpTriggered && _ledgeController.CanClimbOnLedge());
+            walkState.AddTransition(climbingOverState, () => InputHandler.JumpTriggered && _ledgeController.CanClimbOverLedge());
+            walkState.AddTransition(climbingOnState, () => InputHandler.JumpTriggered && _ledgeController.CanClimbOnLedge());
             walkState.AddTransition(jumpState, () => jumpStatePrecondition());
-            walkState.AddTransition(crouchState, () => _inputHandler.CrouchTrigger.IsTriggered, _inputHandler.CrouchTrigger.ReleaseTrigger);
+            walkState.AddTransition(crouchState, () => InputHandler.CrouchTrigger.IsTriggered, InputHandler.CrouchTrigger.ReleaseTrigger);
             walkState.AddTransition(fallState, () => _playerGravity.IsFalling);
-            walkState.AddTransition(standingState, () => _inputHandler.MovementInput.Equals(Vector2.zero));
+            walkState.AddTransition(standingState, () => InputHandler.MovementInput.Equals(Vector2.zero));
 
             runState.AddTransition(walkState, () => !runStatePrecondition());
-            runState.AddTransition(climbingOverState, () => _inputHandler.JumpTriggered && _ledgeController.CanClimbOverLedge());
-            runState.AddTransition(climbingOnState, () => _inputHandler.JumpTriggered && _ledgeController.CanClimbOnLedge());
+            runState.AddTransition(climbingOverState, () => InputHandler.JumpTriggered && _ledgeController.CanClimbOverLedge());
+            runState.AddTransition(climbingOnState, () => InputHandler.JumpTriggered && _ledgeController.CanClimbOnLedge());
             runState.AddTransition(jumpState, () => jumpStatePrecondition());
-            runState.AddTransition(slideState, () => _inputHandler.CrouchTrigger.IsTriggered && runState.CanSlide(), _inputHandler.CrouchTrigger.ReleaseTrigger);
+            runState.AddTransition(slideState, () => InputHandler.CrouchTrigger.IsTriggered && runState.CanSlide(), InputHandler.CrouchTrigger.ReleaseTrigger);
             runState.AddTransition(fallState, () => _playerGravity.IsFalling);
 
             slideState.AddTransition(crouchState, () => slideState.SlideFinished());
-            slideState.AddTransition(walkState, () => _inputHandler.CrouchTrigger.IsTriggered && slideState.CanStand() && _playerBodyController.CanStand(), _inputHandler.CrouchTrigger.ReleaseTrigger);
+            slideState.AddTransition(walkState, () => InputHandler.CrouchTrigger.IsTriggered && slideState.CanStand() && _playerBodyController.CanStand(), InputHandler.CrouchTrigger.ReleaseTrigger);
             slideState.AddTransition(fallState, () => _playerGravity.IsFalling);
 
             crouchState.AddTransition(runState, () => runStatePrecondition() && _playerBodyController.CanStand());
-            crouchState.AddTransition(walkState, () => _inputHandler.CrouchTrigger.IsTriggered && _playerBodyController.CanStand(), _inputHandler.CrouchTrigger.ReleaseTrigger);
+            crouchState.AddTransition(walkState, () => InputHandler.CrouchTrigger.IsTriggered && _playerBodyController.CanStand(), InputHandler.CrouchTrigger.ReleaseTrigger);
             crouchState.AddTransition(fallState, () => _playerGravity.IsFalling);
-            crouchState.AddTransition(crouchIdleState, () => _inputHandler.MovementInput.Equals(Vector2.zero));
+            crouchState.AddTransition(crouchIdleState, () => InputHandler.MovementInput.Equals(Vector2.zero));
             crouchState.AddTransition(jumpState, () => jumpStatePrecondition());
 
-            crouchIdleState.AddTransition(crouchState, () => !_inputHandler.MovementInput.Equals(Vector2.zero));
-            crouchIdleState.AddTransition(standingState, () => _inputHandler.CrouchTrigger.IsTriggered && _playerBodyController.CanStand(), _inputHandler.CrouchTrigger.ReleaseTrigger);
+            crouchIdleState.AddTransition(crouchState, () => !InputHandler.MovementInput.Equals(Vector2.zero));
+            crouchIdleState.AddTransition(standingState, () => InputHandler.CrouchTrigger.IsTriggered && _playerBodyController.CanStand(), InputHandler.CrouchTrigger.ReleaseTrigger);
             crouchIdleState.AddTransition(jumpState, () => jumpStatePrecondition());
 
             jumpState.AddTransition(runState, () => runStatePrecondition() && jumpState.CanGround() && _playerGravity.IsGrounded);
             jumpState.AddTransition(walkState, () => jumpState.CanGround() && _playerGravity.IsGrounded);
             jumpState.AddTransition(fallState, jumpState.InHightPoint);
-            jumpState.AddTransition(grabLedgeState, () => _inputHandler.GrabLedgeTrigger.IsTriggered && _ledgeController.CanGrabToLedgeGrabPointInView());
+            jumpState.AddTransition(grabLedgeState, () => InputHandler.GrabLedgeTrigger.IsTriggered && _ledgeController.CanGrabToLedgeGrabPointInView());
 
             fallState.AddTransition(walkState, () => _playerGravity.IsGrounded);
-            fallState.AddTransition(grabLedgeState, () => _inputHandler.GrabLedgeTrigger.IsTriggered && _ledgeController.CanGrabToLedgeGrabPointInView());
+            fallState.AddTransition(grabLedgeState, () => InputHandler.GrabLedgeTrigger.IsTriggered && _ledgeController.CanGrabToLedgeGrabPointInView());
 
-            grabLedgeState.AddTransition(fallState, () => _inputHandler.MoveBack && grabLedgeState.CanFinish());
-            grabLedgeState.AddTransition(climbingUpState, () => _inputHandler.MoveForward && grabLedgeState.CanFinish() && climbingUpState.CanClimb());
-            grabLedgeState.AddTransition(ledgeJumpState, () => _inputHandler.JumpTriggered && grabLedgeState.CanFinish());
+            grabLedgeState.AddTransition(fallState, () => InputHandler.MoveBack && grabLedgeState.CanFinish());
+            grabLedgeState.AddTransition(climbingUpState, () => InputHandler.MoveForward && grabLedgeState.CanFinish() && climbingUpState.CanClimb());
+            grabLedgeState.AddTransition(ledgeJumpState, () => InputHandler.JumpTriggered && grabLedgeState.CanFinish());
 
             ledgeJumpState.AddTransition(grabLedgeState, () => _ledgeController.CanGrabToLedgeGrabPointInView());
             ledgeJumpState.AddTransition(fallState, ledgeJumpState.InHightPoint);

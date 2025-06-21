@@ -8,27 +8,27 @@ namespace Failsafe.Player.Interaction
     {
         [SerializeField] public float _carryingDistance = 2.5f;
         [SerializeField] public float _maxPickupDistance = 5f;
-        
+
         [SerializeField] public GameObject _carryingObject;
         [SerializeField] public Rigidbody _carryingBody;
         [SerializeField] public Transform _playerCameraTransform;
-        
+
         [SerializeField] public Vector3 _draggablePositionOffset;
         [SerializeField] public float _dragSpeed = 10f;
-        
+
         [Tooltip("Данная сила умножается на число от 1 до 3 при зажатии кнопки броска.")]
         [SerializeField] private float _throwForce = 3f;
 
         private Quaternion _relativeRotation;
-        
+
         private PlayerController _playerController;
-        
-        private bool _isPreparingToThrow; 
+
+        private bool _isPreparingToThrow;
         private float _throwForceMultiplier;
         private const float _maxForceMultiplier = 3f;
-        
+
         private bool _allowToGrabOrDrop = true;
-        
+
         public bool IsDragging { get; private set; }
 
         private void Awake()
@@ -36,10 +36,10 @@ namespace Failsafe.Player.Interaction
             if (!_playerCameraTransform)
             {
                 Camera playerCamera = transform.root.GetComponentInChildren<Camera>();
-                
+
                 _playerCameraTransform = playerCamera.transform;
             }
-            
+
             _playerController = GetComponent<PlayerController>();
         }
 
@@ -56,7 +56,7 @@ namespace Failsafe.Player.Interaction
 
             if (IsDragging)
             {
-                if (!_carryingObject|| !_carryingBody)
+                if (!_carryingObject || !_carryingBody)
                 {
                     DropItem();
                     return;
@@ -95,35 +95,35 @@ namespace Failsafe.Player.Interaction
                 DropItem();
             }
         }
-        
+
         private void DragObject()
         {
             Vector3 targetPosition = transform.position + _playerCameraTransform.forward * _carryingDistance;
             Quaternion targetRotation = transform.rotation * _relativeRotation;
-            
+
             _carryingBody.linearVelocity = (targetPosition - _carryingBody.position + _draggablePositionOffset) * _dragSpeed;
-            
+
             _carryingBody.rotation = targetRotation;
-            
+
             _carryingBody.angularVelocity = Vector3.zero;
         }
-        
+
         private void GrabObject()
         {
             Physics.Raycast(_playerCameraTransform.position, _playerCameraTransform.forward, out RaycastHit hitInfo, _maxPickupDistance);
 
             if (!hitInfo.rigidbody)
                 return;
-            
+
             _carryingBody = hitInfo.rigidbody;
             _carryingBody.useGravity = false;
-            
+
             _carryingObject = hitInfo.rigidbody.gameObject;
-            
+
             _carryingObject.transform.parent = transform;
             _relativeRotation = _carryingObject.transform.localRotation;
             _carryingObject.transform.parent = null;
-            
+
             IsDragging = true;
             _isPreparingToThrow = false;
             _throwForceMultiplier = 0f;
@@ -144,7 +144,7 @@ namespace Failsafe.Player.Interaction
             _isPreparingToThrow = false;
             _throwForceMultiplier = 0f;
         }
-        
+
         private void DropItem()
         {
             if (_carryingBody) _carryingBody.useGravity = true;
