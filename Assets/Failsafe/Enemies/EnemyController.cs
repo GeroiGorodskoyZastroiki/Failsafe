@@ -9,28 +9,28 @@ public class EnemyController
     private readonly Transform _transform;
     private readonly NavMeshAgent _navMeshAgent;
     private RoomData _currentRoom;
-
-    public EnemyController(Transform transform, NavMeshAgent navMeshAgent)
+    private Enemy _enemy;
+    public EnemyController(Transform transform, NavMeshAgent navMeshAgent, Enemy enemy)
     {
         _transform = transform;
         _navMeshAgent = navMeshAgent;
-
+        _enemy = enemy;
         _navMeshAgent.updatePosition = false;
         _navMeshAgent.updateRotation = false;
     }
 
-    public void MoveToPoint(Vector3 point)
+    public void MoveToPoint(Vector3 point, float speed)
     {
         _navMeshAgent.isStopped = false;
-        _navMeshAgent.speed = 3f;
+        _navMeshAgent.speed = speed;
         _navMeshAgent.SetDestination(point);
     }
 
 
-    public void RunToPoint(Vector3 point)
+    public void RunToPoint(Vector3 point, float speed)
     {
         _navMeshAgent.isStopped = false;
-        _navMeshAgent.speed = 7f;
+        _navMeshAgent.speed = speed;
         _navMeshAgent.SetDestination(point);
     }
 

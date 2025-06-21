@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.AI;
 
 /// <summary>
 /// Преследование объекта, попавшего в сенсор
@@ -9,25 +10,27 @@ public class ChasingState : BehaviorState
     private Sensor[] _sensors;
     private Transform _transform;
     private Vector3? _chasingPosition;
+    private NavMeshAgent _navMeshAgent;
+    private Enemy_ScriptableObject _enemyConfig;
 
     private EnemyController _enemyController;
 
-    private float _loseTime = 3;
     private float _loseProgress;
 
-    private float _attackRangeMin = 10f;
     private float _distanceToPlayer;
     private bool _playerInSight;
 
-    public ChasingState(Sensor[] sensors, Transform currentTransform, EnemyController enemyController)
+    public ChasingState(Sensor[] sensors, Transform currentTransform, EnemyController enemyController, NavMeshAgent navMeshAgent, Enemy_ScriptableObject enemyConfig)
     {
         _sensors = sensors;
         _transform = currentTransform;
         _enemyController = enemyController;
+        _navMeshAgent = navMeshAgent;   
+        _enemyConfig = enemyConfig;
     }
 
-    public bool PlayerLost() => _loseProgress >= _loseTime;
-    public bool PlayerInAttackRange() => _playerInSight && (_distanceToPlayer < _attackRangeMin);
+    public bool PlayerLost() => _loseProgress >= _enemyConfig.enemyLostPlayerTime;
+    public bool PlayerInAttackRange() => _playerInSight && (_distanceToPlayer < _enemyConfig.enemyAttackRangeMin);
 
 
 
@@ -36,6 +39,7 @@ public class ChasingState : BehaviorState
         base.Enter();
         _loseProgress = 0;
         _playerInSight = false;
+        _navMeshAgent.stoppingDistance = _enemyConfig.enemyAttackRangeMin;
         Debug.Log("Enter ChasingState");
     }
 
@@ -73,7 +77,7 @@ public class ChasingState : BehaviorState
         {
             return;
         }
-        _enemyController.RunToPoint(_chasingPosition.Value);
+        _enemyController.RunToPoint(_chasingPosition.Value, _enemyConfig.enemyChaseSpeed);
         _enemyController.RotateToPoint(_chasingPosition.Value, 5f);
     }
 }

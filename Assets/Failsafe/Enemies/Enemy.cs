@@ -24,6 +24,8 @@ public class Enemy : MonoBehaviour
     public AwarenessMeter _awarenessMeter;
     public bool seePlayer;
     public bool hearPlayer;
+    [SerializeField] private Enemy_ScriptableObject enemyConfig;
+
     private void Awake()
     {
         // Основные компоненты
@@ -36,7 +38,7 @@ public class Enemy : MonoBehaviour
         _navMeshAgent.updateRotation = false;
 
         // Создаём вспомогательные классы
-        _controller = new EnemyController(transform, _navMeshAgent);
+        _controller = new EnemyController(transform, _navMeshAgent, this);
         _awarenessMeter = new AwarenessMeter(_sensors);
         _enemyAnimator = new EnemyAnimator(_navMeshAgent, _animator, transform, _controller);
 
@@ -48,9 +50,9 @@ public class Enemy : MonoBehaviour
 
         // Создаём состояния (уже можно брать патрульные точки из Room)
         var defaultState = new DefaultState(_sensors, transform, _controller);
-        var chasingState = new ChasingState(_sensors, transform, _controller);
-        var patrolState = new PatrolState(_sensors, _controller);
-        var attackState = new AttackState(_sensors, transform, _controller, _enemyAnimator, _activeLaser, _laserBeamPrefab, _laserSpawnPoint);
+        var chasingState = new ChasingState(_sensors, transform, _controller,_navMeshAgent, enemyConfig);
+        var patrolState = new PatrolState(_sensors, _controller,_navMeshAgent,enemyConfig);
+        var attackState = new AttackState(_sensors, transform, _controller, _enemyAnimator, _activeLaser, _laserBeamPrefab, _laserSpawnPoint, _navMeshAgent, enemyConfig);
 
         defaultState.AddTransition(chasingState, _awarenessMeter.IsChasing);
         patrolState.AddTransition(chasingState, _awarenessMeter.IsChasing);

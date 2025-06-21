@@ -8,29 +8,32 @@ public class PatrolState : BehaviorState
 {
     private readonly Sensor[] _sensors;
     private readonly EnemyController _enemyController;
+    private NavMeshAgent _navMeshAgent;
+    private Enemy_ScriptableObject _enemyConfig;
 
     private List<Transform> _patrolPoints = new();
     private int _currentPatrolPointIndex = -1;
     private Vector3 _patrolPoint;
 
-    private float _waitTime = 3f;
     private float _waitTimer;
     private bool _isWaiting = false;
-    private float _warningProgress;
-    private float _warningTime = 1f;
+    private float speed;
 
-    public PatrolState(Sensor[] sensors, EnemyController enemyController)
+    public PatrolState(Sensor[] sensors, EnemyController enemyController, NavMeshAgent navMeshAgent, Enemy_ScriptableObject enemyConfig)
     {
         _sensors = sensors;
         _enemyController = enemyController;
+        _navMeshAgent = navMeshAgent;
+        _enemyConfig = enemyConfig;
     }
 
     public override void Enter()
     {
         base.Enter();
-        _waitTimer = _waitTime;
+        _waitTimer = _enemyConfig.enemyPatrolingWaitTime;
+        _navMeshAgent.stoppingDistance = 1f;
+        speed = _enemyConfig.enemyPatrolingSpeed;
         _isWaiting = false;
-        _warningProgress = 0f;
 
         if (_patrolPoints == null || _patrolPoints.Count == 0)
         {
@@ -40,7 +43,7 @@ public class PatrolState : BehaviorState
         if (_patrolPoints == null || _patrolPoints.Count == 0)
         {
             _patrolPoint = _enemyController.RandomPoint();
-            _enemyController.MoveToPoint(_patrolPoint);
+            _enemyController.MoveToPoint(_patrolPoint, speed);
         }
         else
         {
@@ -51,13 +54,6 @@ public class PatrolState : BehaviorState
 
     public override void Update()
     {
-        foreach (var sensor in _sensors)
-        {
-            if (sensor.IsActivated())
-            {
-                _warningProgress += sensor.SignalStrength * Time.deltaTime;
-            }
-        }
 
         if (_isWaiting)
         {
@@ -75,7 +71,7 @@ public class PatrolState : BehaviorState
         _waitTimer -= Time.deltaTime;
         if (_waitTimer <= 0f)
         {
-            _waitTimer = _waitTime;
+            _waitTimer = _enemyConfig.enemyPatrolingWaitTime;
             _isWaiting = false;
             HandlePatrolling();
         }
@@ -93,11 +89,9 @@ public class PatrolState : BehaviorState
             _patrolPoint = _patrolPoints[_currentPatrolPointIndex].position;
         }
 
-        _enemyController.MoveToPoint(_patrolPoint);
+        _enemyController.MoveToPoint(_patrolPoint, speed);
     }
-
-    public bool PlayerSpotted() => _warningProgress >= _warningTime;
-
+    
     public void SetManualPatrolPoints(List<Transform> points, bool restart = true)
     {
         _patrolPoints = points ?? new List<Transform>();
@@ -106,7 +100,7 @@ public class PatrolState : BehaviorState
         {
             _currentPatrolPointIndex = -1;
             _isWaiting = false;
-            _waitTimer = _waitTime;
+            _waitTimer = _enemyConfig.enemyPatrolingWaitTime;
             HandlePatrolling();
         }
     }

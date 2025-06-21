@@ -21,28 +21,11 @@ public class DefaultState : BehaviorState
         _enemyController = enemyController;
     }
 
-    private float _warningProgress;
-    private float _warningTime = 1;
-
-
-    public bool PlayerSpotted() => _warningProgress >= _warningTime;
-
+    
     public override void Enter()
     {
         base.Enter();
-        _warningProgress = 0;
         Debug.Log("Enter DefaultState");
     }
-
-    public override void Update()
-    {
-        foreach (var sensor in _sensors)
-        {
-
-            if (sensor.IsActivated())
-            {
-                _warningProgress += sensor.SignalStrength * Time.deltaTime;
-            }
-        }
-    }
+    
 }

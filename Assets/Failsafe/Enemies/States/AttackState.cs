@@ -14,11 +14,9 @@ public class AttackState : BehaviorState
     private Transform _transform;
     private Vector3? _targetPosition;
     private Transform _target;
+    private NavMeshAgent _navMeshAgent;
+    private Enemy_ScriptableObject _enemyConfig;
     
-    private float _attackDelay = 1f;
-    private float _rayDuration = 5f;
-    private float _rayDPS = 100f;
-    private float _rayCooldown = 4f;
     private float _attackProgress = 0;
     private bool _delayOver = false;
     private bool _onCooldown = false;
@@ -27,7 +25,6 @@ public class AttackState : BehaviorState
     private EnemyController _enemyController;
     private EnemyAnimator _enemyAnimator;
 
-    private float _attackRangeMax = 15f;
     private float _distanceToPlayer;
 
     private LaserBeamController _activeLaser;
@@ -35,7 +32,7 @@ public class AttackState : BehaviorState
     private Transform _laserOrigin;
     private bool _playerInSight;
 
-    public AttackState(Sensor[] sensors, Transform currentTransform, EnemyController enemyController, EnemyAnimator enemyAnimator, LaserBeamController laserBeamController, GameObject laser, Transform laserOrigin)
+    public AttackState(Sensor[] sensors, Transform currentTransform, EnemyController enemyController, EnemyAnimator enemyAnimator, LaserBeamController laserBeamController, GameObject laser, Transform laserOrigin,NavMeshAgent navMeshAgent ,Enemy_ScriptableObject enemyconfig)
     {
         _sensors = sensors;
         _transform = currentTransform;
@@ -44,11 +41,13 @@ public class AttackState : BehaviorState
         _activeLaser = laserBeamController;
         _laserPrefab = laser;
         _laserOrigin = laserOrigin;
+        _navMeshAgent = navMeshAgent;
+        _enemyConfig = enemyconfig;
     }
 
     public bool PlayerOutOfAttackRange()
     {
-        return (_distanceToPlayer > _attackRangeMax || !_playerInSight) && !_onCooldown;
+        return (_distanceToPlayer > _enemyConfig.enemyAttackRangeMax || !_playerInSight) && !_onCooldown;
     }
 
     public override void Enter()
@@ -68,7 +67,7 @@ public class AttackState : BehaviorState
     {
         _attackProgress += Time.deltaTime;
 
-        if (!_delayOver && _attackProgress > _attackDelay)
+        if (!_delayOver && _attackProgress > _enemyConfig.enemyAttackDelay)
         {
             _delayOver = true;
             _attackProgress = 0;
@@ -100,8 +99,8 @@ public class AttackState : BehaviorState
                         var damageableComponent = visual.Target.GetComponentInChildren<DamageableComponent>();
                         if (sensor.SignalInAttackRay((Vector3)_targetPosition) && damageableComponent is not null)
                         {
-                            damageableComponent.TakeDamage(new FlatDamage(_rayDPS * Time.deltaTime));
-                            Debug.Log($"Урон: {_rayDPS * Time.deltaTime:F1}");
+                            damageableComponent.TakeDamage(new FlatDamage(_enemyConfig.enemyDamage * Time.deltaTime));
+                            Debug.Log($"Урон: {_enemyConfig.enemyDamage * Time.deltaTime:F1}");
                         }
                     }
                 }
@@ -111,7 +110,7 @@ public class AttackState : BehaviorState
                 }
         }
 
-        if (_attackFired && _attackProgress > _rayDuration)
+        if (_attackFired && _attackProgress > _enemyConfig.enemyAttackDuration)
         {
             if (_activeLaser != null)
             {
@@ -124,7 +123,7 @@ public class AttackState : BehaviorState
             Debug.Log("Атака на перезарядке");
         }
 
-        if (_attackProgress > _rayDuration + _rayCooldown)
+        if (_attackProgress > _enemyConfig.enemyAttackDuration + _enemyConfig.enemyAttackCooldown)
         {
             _onCooldown = false;
             _enemyAnimator.isReloading(false);
