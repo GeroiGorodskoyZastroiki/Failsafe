@@ -2,8 +2,8 @@ using UnityEngine;
 
 public class PlayAudioClipOnMe : MonoBehaviour
 {
-    public void PlayAtMyPosition(AudioClip audioClip)
-    {
-        AudioSource.PlayClipAtPoint(audioClip, transform.position);
-    }
+    [SerializeField] FMODUnity.EventReference _eventReference;
+
+    public void PlayAtMyPosition() =>
+        FMODUnity.RuntimeManager.PlayOneShot(_eventReference, transform.position);
 }
